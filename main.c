@@ -66,6 +66,15 @@ int calcJsonSize(jsmntok_t* t, int itr) {
 
 int main() {
 
+
+	int username[64];
+
+	getDVString(CURRENTAPP_SLOT, "username", username);
+	if ( strcmp(username, "") ) {
+		getDVString(DEVICEROOT_SLOT, "OWNER", username);
+		setDVString(CURRENTAPP_SLOT, "username", username);
+	}
+
 	// レイアウト
 	int headerRect = createSlotFromTemplate("UIXempty");
 	setDVFloat(headerRect, "Amy", 0.95f);
@@ -80,7 +89,7 @@ int main() {
 	setSlotParent(threadInput, headerImage);
 
 	int bodyRect = createSlotFromTemplate("UIXempty");
-	setDVFloat(bodyRect, "Amy", 0.05f);
+	setDVFloat(bodyRect, "Amy", 0.15f);
 	setDVFloat(bodyRect, "AMy", 0.95f);
 	setSlotParent(bodyRect, UIXROOT_SLOT);
 
@@ -95,25 +104,25 @@ int main() {
 	setDVInt(body, "expandH", 0);
 	setSlotParent(body, bodyScroll);
 
-	int inputRect = createSlotFromTemplate("UIXempty");
-	setDVFloat(inputRect, "AMy", 0.05f);
-	setSlotParent(inputRect, UIXROOT_SLOT);
-
 	int userInputRect = createSlotFromTemplate("UIXempty");
-	setDVFloat(userInputRect, "AMx", 0.2f);
-	setSlotParent(userInputRect, inputRect);
+	setDVFloat(userInputRect, "AMy", 0.15f);
+	setDVFloat(userInputRect, "Amy", 0.1f);
+	setSlotParent(userInputRect, UIXROOT_SLOT);
+
+	int userImage = createSlotFromTemplate("UIXimage");
+	setRGB(userImage, 0.012f, 0.396f, 0.549f);
+	setSlotParent(userImage, userInputRect);
 
 	int userInput = createSlotFromTemplate("UIXtextField");
-	setDVFloat(userInput, "size", 15.0f);
-	setSlotParent(userInput, userInputRect);
-	int userImage = createSlotFromTemplate("UIXimage");
-	setRGB(userImage, 0.0157f, 0.6784f, 0.7490f);
-	setSlotParent(userImage, userInput);
+	setDVFloat(userInput, "size", 20.0f);
+	setDVString(userInput, "content", username);
+	setSlotParent(userInput, userImage);
+
 
 	int textInputRect = createSlotFromTemplate("UIXempty");
-	setDVFloat(textInputRect, "Amx", 0.2f);
 	setDVFloat(textInputRect, "AMx", 0.8f);
-	setSlotParent(textInputRect, inputRect);
+	setDVFloat(textInputRect, "AMy", 0.1f);
+	setSlotParent(textInputRect, UIXROOT_SLOT);
 
 	int textInput = createSlotFromTemplate("UIXtextField");
 	setDVFloat(textInput, "size", 20.0f);
@@ -121,7 +130,8 @@ int main() {
 
 	int submitButtonRect = createSlotFromTemplate("UIXempty");
 	setDVFloat(submitButtonRect, "Amx", 0.8f);
-	setSlotParent(submitButtonRect, inputRect);
+	setDVFloat(submitButtonRect, "AMy", 0.1f);
+	setSlotParent(submitButtonRect, UIXROOT_SLOT);
 	int submitImage = createSlotFromTemplate("UIXimage");
 	setRGB(submitImage, 0.0157f, 0.6784f, 0.7490f);
 	setSlotParent(submitImage, submitButtonRect);
@@ -165,7 +175,6 @@ int main() {
 
 
 	int threadname[32];
-	int username[32];
 	int content[256];
 	int date[32];
 
@@ -204,7 +213,7 @@ int main() {
 			debuglog("\n");
 
 			jsmn_init(&p);
-			setDVInt(DEVICEROOT_SLOT, "OVERCLOCK", 100);
+			setDVInt(DEVICEROOT_SLOT, "OVERCLOCK", 512);
 			int r = jsmn_parse(&p, textbuff, strlen(textbuff), t, sizeof(t));
 			setDVInt(DEVICEROOT_SLOT, "OVERCLOCK", 30);
 			
@@ -265,8 +274,6 @@ int main() {
 		// メッセージの送信
 		if (getDVInt(submitButton, "pressed") != 0) {
 			setDVInt(submitButton, "pressed", 0);
-			getDVString(threadInput, "content", threadname);
-			getDVString(userInput, "content", username);
 			getDVString(textInput, "content", content);
 
 			format(textbuff, "{\"thread\": \"%s\", \"username\": \"%s\", \"content\": \"%s\"}", threadname, username, content);
@@ -280,6 +287,13 @@ int main() {
 
 			reload = 1;
 		}
+
+		if (getDVInt(userInput, "editFinished") != 0) {
+			setDVInt(userInput, "editFinished", 0);
+			getDVString(userInput, "content", username);
+			setDVString(CURRENTAPP_SLOT, "username", username);
+		}
+
 
 	}
 
